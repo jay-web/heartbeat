@@ -1,8 +1,7 @@
 module.exports = {
-    sample : function(data, callback){
+    ping : function(data, callback){
         // callback a http status code and payload object
-        console.log(data);
-        callback(200, {name: "jay sharma"} )
+        callback(200);
     },
 
     notFound : function(data, callback){
