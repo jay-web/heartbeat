@@ -9,6 +9,12 @@ const handlers = require("./handlers.js");
 const config = require('./config.js');
 const fs = require('fs');
 const unifiedServer = require("./unifiedServer.js");
+const _data = require("./lib/data.js");
+
+console.log(_data)
+_data.delete('test', 'greet', function(err, data){
+    console.log('This was the err ', err, data);
+})
 
 const httpsServerOptions = {
     'key': fs.readFileSync("./https/key.pem"),
