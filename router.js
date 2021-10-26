@@ -1,5 +1,6 @@
-let handlers = require("./handlers.js");
+let handlers = require("./lib/handlers/handlers");
 
 module.exports = {
-    'ping': handlers.ping
+    'ping': handlers.ping,
+    'user': handlers.user
 }

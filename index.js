@@ -5,7 +5,7 @@ const url = require("url");
 const {StringDecoder} = require('string_decoder')
 
 const router = require("./router.js");
-const handlers = require("./handlers.js");
+const handlers = require("./lib/handlers/handlers");
 const config = require('./config.js');
 const fs = require('fs');
 const unifiedServer = require("./unifiedServer.js");

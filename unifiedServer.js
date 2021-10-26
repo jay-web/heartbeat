@@ -2,7 +2,9 @@ const url = require("url");
 const {StringDecoder} = require('string_decoder')
 
 const router = require("./router.js");
-const handlers = require("./handlers.js");
+const handlers = require("./lib/handlers/handlers");
+const helpers = require("./lib/helpers");
+
 
 
 module.exports = (req, res ) => {
@@ -39,7 +41,7 @@ module.exports = (req, res ) => {
              'queryStringObject': queryStringObject,
              'headers': headers,
              'method': method,
-             'payload': buffer
+             'payload': helpers.parsedJsonToObject(buffer)
          }
  
          // finally route the request to handler

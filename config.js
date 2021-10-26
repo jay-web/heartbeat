@@ -2,12 +2,14 @@ let environment = {
     staging: {
         httpsPort : '3000',
         httpPort: '3001',
-        envName : 'Staging'
+        envName : 'Staging',
+        secret: 'This is not production'
     },
     production:{
         httpsPort: '5000',
         httpPort: '5001.',
-        envName : 'Production'
+        envName : 'Production',
+        secret: 'This is not development'
     }
 }
 
