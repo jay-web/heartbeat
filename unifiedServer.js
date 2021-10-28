@@ -56,10 +56,8 @@ module.exports = (req, res ) => {
              // return the response
              res.setHeader('Content-Type', 'application/json')
              res.writeHead(statusCode);
-             res.end(payloadString);
- 
-         
+             res.end(payloadString);         
          })
- 
+
      })
 }
