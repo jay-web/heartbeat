@@ -3,13 +3,15 @@ let environment = {
         httpsPort : '3000',
         httpPort: '3001',
         envName : 'Staging',
-        secret: 'This is not production'
+        secret: 'This is not production',
+        maxChecks: 5
     },
     production:{
         httpsPort: '5000',
         httpPort: '5001.',
         envName : 'Production',
-        secret: 'This is not development'
+        secret: 'This is not development',
+        maxChecks: 5
     }
 }
 
