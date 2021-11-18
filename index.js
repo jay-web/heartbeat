@@ -5,6 +5,11 @@ const http = require("http");
 const config = require('./config.js');
 const fs = require('fs');
 const unifiedServer = require("./unifiedServer.js");
+const _data = require("./lib/data");
+
+_data.list("checks", function(err, data){
+    console.log(err, data)
+})
 
 const httpsServerOptions = {
     'key': fs.readFileSync("./https/key.pem"),
