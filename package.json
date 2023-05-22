@@ -1,0 +1,23 @@
+{
+  "name": "monitor",
+  "version": "1.0.0",
+  "description": "upvote monitoring application",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "start": "tsc -w",
+    "start-dev": "concurrently \"npm:start\" \"nodemon ./build/server.js\""
+  },
+  "keywords": [
+    "website",
+    "monitoring"
+  ],
+  "author": "jay sharma",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.2.1",
+    "concurrently": "^8.0.1",
+    "nodemon": "^2.0.22",
+    "typescript": "^5.0.4"
+  }
+}
