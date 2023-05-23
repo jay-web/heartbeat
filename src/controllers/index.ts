@@ -1,8 +1,8 @@
 
 class Controllers {
 
-    sample(data:any, callback:any){
-        callback(200, { 'name': 'handler sample'})
+    ping(data:any, callback:any){
+        callback(200)
     }
 
     notFound(data:any, callback:any){

@@ -3,21 +3,13 @@
 GET http://localhost:7000 HTTP/1.1
 
 ### Request with another path
-GET http://localhost:7000/api/v1/foo HTTP/1.1
+GET http://localhost:7000/api/v1/ping HTTP/1.1
 
-### Request with query string
-GET http://localhost:7000/api/v1/foo?fizz=buzz HTTP/1.1
-
-### Request with headers
-GET http://localhost:7000/api/v1/foo HTTP/1.1
-Content-Type: application/json
-foo:barr
-barr:buzz
 
 ### Request with payload
-GET http://localhost:7000/api/v1/foo HTTP/1.1
+GET http://localhost:7000/api/v1/ping HTTP/1.1
 Content-Type: application/json
-foo:barr
+sample:barr
 barr:buzz
 
 {

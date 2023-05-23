@@ -1,7 +1,7 @@
 import controllers from "../controllers";
 
 const router = {
-    'api/v1/foo': controllers.sample,
+    'api/v1/ping': controllers.ping,
     'notfound': controllers.notFound
 }
 

@@ -2,18 +2,53 @@
 import config from "./config";
 import httpsServer from "./servers/httpsServer";
 import httpServer from "./servers/httpServer";
+import dataLibrary from "./lib/data";
 
 const httpPort = config.httpPort;
 const httpsPort = config.httpsPort;
 
-// ! HTTP AND HTTPS Server listening at their respected PORTS
+
+// dataLibrary.create('test', 'users', { name: 'jay'}, (err) => {
+//   if(!err){
+//     console.log(`Write successfully`)
+//   }else{
+//     console.log(err);
+//   }
+// })
+
+// dataLibrary.read('test', 'users', (err, data) => {
+//   if(data){
+//     console.log(data)
+//   }else{
+//     console.log(err)
+//   }
+// } )
+
+
+// dataLibrary.update('test', 'users', { name: 'jay'}, (err) => {
+//   if(!err){
+//     console.log('updated successfully')
+//   }else{
+//     console.error(err)
+//   }
+// })
+
+// dataLibrary.delete('test', 'users', (err) => {
+//   if(!err){
+//     console.log('delete successfully')
+//   }else{
+//     console.error(err)
+//   }
+// })
+
+// ! HTTPS AND HTTP Server listening at their respected PORTS
 
 httpsServer.listen(httpsPort, () => {
-  console.log(`Hey server listening at ${httpsPort}`);
+  console.log(`Hey HTTPS server listening at ${httpsPort}`);
 });
 
 
 
 httpServer.listen(httpPort, () => {
-  console.log(`Hey server listening at ${httpPort}`);
+  console.log(`Hey HTTP server listening at ${httpPort}`);
 });
