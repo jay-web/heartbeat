@@ -6,7 +6,7 @@ class DataLibrary {
     private baseDir = path.join(__dirname, '/../database/');
 
     // ! Create the file and write the data
-    public async create(dir, filename, data, callback){
+    public async create(dir, filename, data){
         
         let filePath = `${this.baseDir}${dir}/${filename}.json`;
         let fd: fs.FileHandle | null;
@@ -15,10 +15,10 @@ class DataLibrary {
         try {
             fd = await fs.open(filePath, 'wx');
             let stringData = JSON.stringify(data);
-            await fs.writeFile(fd, stringData);
-            
+           await fs.writeFile(fd, stringData);
+    
         } catch (error) {
-            callback(error)
+            throw new Error(`${filename} in ${dir} is already exist`);            
         } finally {
             if(fd! !== undefined){
                 fd!.close()

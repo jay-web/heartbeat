@@ -52,3 +52,15 @@ httpsServer.listen(httpsPort, () => {
 httpServer.listen(httpPort, () => {
   console.log(`Hey HTTP server listening at ${httpPort}`);
 });
+
+
+process.on('uncaughtException', (err) => {
+  console.log(`Uncaught Exception: ${err.message}`);
+  process.exit(1);
+});
+
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.log(`unhandled Rejection : `, promise, `reason : ${reason}`);
+  process.exit(1)
+})
