@@ -7,6 +7,7 @@ export interface IUser {
 }
 
 export const validateUser  = (data: IUser) => {
+    
     let firstName = typeof (data.firstName) == 'string' && data.firstName.trim().length > 0 ? data.firstName.trim() : false;
     let lastName = typeof (data.lastName) == 'string' && data.lastName.trim().length > 0 ? data.lastName.trim() : false;
     let phone = typeof (data.phone) == 'string' && data.phone.trim().length == 10 ? data.phone.trim() : false;

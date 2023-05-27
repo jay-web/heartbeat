@@ -28,19 +28,21 @@ class DataLibrary {
     }
 
     // ! Read the data from the file
-    public async read(dir:string, filename:string, callback){
+    public async read(dir:string, filename:string){
         let filePath = `${this.baseDir}${dir}/${filename}.json`;
         try {
             let data = await fs.readFile(filePath, 'utf-8');
-            callback(null, data);
-        } catch (error) {
-            callback(error, null);
+        
+            return JSON.parse(data);
+        } catch (error:any) {
+            console.log("Error read ", error)
+            throw new Error(error);
         }
 
     }
 
     // ! Update the data of the file which already exist
-    public async update(dir:string, filename:string, data:any, callback){
+    public async update(dir:string, filename:string, data:any){
         let filePath = `${this.baseDir}${dir}/${filename}.json`;
         let fd: fs.FileHandle | null;
 
@@ -49,11 +51,10 @@ class DataLibrary {
             let stringData = JSON.stringify(data);
             await fs.truncate(filePath);
             await fs.writeFile(fd, stringData);
-        } catch (error) {
-            callback(error);
+        } catch (error:any) {
+            throw new Error(error);
         } finally{
             if(fd! !== null){
-                callback()
                 fd!.close()
             }
         }
@@ -61,16 +62,14 @@ class DataLibrary {
     }
 
     // ! Delete the data from the file
-    public async delete(dir, filename, callback){
+    public async delete(dir, filename){
         let filePath = `${this.baseDir}${dir}/${filename}.json`;
 
         try {
             await fs.unlink(filePath);
-        } catch (error) {
-            callback(error)
-        } finally {
-            callback()
-        }
+        } catch (error:any) {
+            throw new Error(error);
+        } 
     }
 }
 

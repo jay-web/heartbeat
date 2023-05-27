@@ -52,9 +52,10 @@ const unifiedServer = function (req: IncomingMessage, res: ServerResponse) {
           queryStringObject: queryStringObject,
           method: method,
           headers: headers,
-          payload: JSON.parse(buffer),
+          payload: buffer,
         };
 
+        // console.log("Data from unifiedServer ", data)
         // ? finally call the handler
         try {
           selectedHandler(data, function (statusCode, payload) {
@@ -68,6 +69,7 @@ const unifiedServer = function (req: IncomingMessage, res: ServerResponse) {
             
             res.writeHead(statusCode);
             res.end(payloadString);
+            console.log(`Request ends successfully `, payloadString, data)
           });
         } catch (error:any) {
           

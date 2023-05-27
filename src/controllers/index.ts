@@ -1,4 +1,4 @@
-
+import { userController } from "./users.controller";
 class Controllers {
 
     ping(data:any, callback:any){
@@ -12,4 +12,4 @@ class Controllers {
 
 let controllers = new Controllers();
 
-export default controllers;
+export { controllers, userController };

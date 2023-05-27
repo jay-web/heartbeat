@@ -1,5 +1,5 @@
-import controllers from "../controllers";
-import { userController } from "../controllers/users.controller";
+import {controllers, userController} from "../controllers";
+
 
 const router = {
     'api/v1/ping': controllers.ping,
