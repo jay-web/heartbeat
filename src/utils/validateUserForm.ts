@@ -1,12 +1,7 @@
-export interface IUser {
-    firstName: string,
-    lastName: string,
-    phone:string,
-    password:string,
-    tosArgreement : boolean
-}
+import { IUser } from "../interfaces/user";
 
-export const validateUser  = (data: IUser) => {
+
+export const validateUserForm  = (data: IUser) => {
     
     let firstName = typeof (data.firstName) == 'string' && data.firstName.trim().length > 0 ? data.firstName.trim() : false;
     let lastName = typeof (data.lastName) == 'string' && data.lastName.trim().length > 0 ? data.lastName.trim() : false;
@@ -19,7 +14,6 @@ export const validateUser  = (data: IUser) => {
     }else{
         return false;
     }
-
 
 }
 

@@ -1,4 +1,5 @@
 import { userController } from "./users.controller";
+import { tokenController } from "./tokens.controller";
 class Controllers {
 
     ping(data:any, callback:any){
@@ -12,4 +13,4 @@ class Controllers {
 
 let controllers = new Controllers();
 
-export { controllers, userController };
+export { controllers, userController, tokenController };
