@@ -9,17 +9,18 @@ export const verifyPhone  = (phone: input) => {
 
 }
 
-export const verifyId = (token: input) => {
-    return typeof (token) == 'string' && token.trim().length == 20 ? token.trim() : false;
+export const verifyTokenId = (token: input) => {
+    return typeof (token) == 'string' && token.trim().length == 36 ? token.trim() : false;
 }
 
 
 export const verifyToken = async (id:input, phone:input) => {
-    let token = verifyId(id);
+    let token = verifyTokenId(id);
     let userPhone = verifyPhone(phone);
 
     if(token && phone){
-       let tokenObject =  await dataLibrary.read('tokens',  token)
+       let fileName = token.slice(30);
+       let tokenObject =  await dataLibrary.read('tokens',  fileName);
        if(tokenObject.phone == userPhone && tokenObject.expires > Date.now()){
         return true;
        }

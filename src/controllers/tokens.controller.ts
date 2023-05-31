@@ -1,8 +1,9 @@
 import { IData } from "../interfaces/data";
 import dataLibrary from "../lib/data";
-import { verifyId, verifyPhone } from "../utils/auth";
+import { verifyTokenId, verifyPhone } from "../utils/auth";
 import { createRandomString } from "../utils/createRandomString";
 import { hashUserPassword } from "../utils/hashPassword";
+import { v4 as uuidv4 } from 'uuid';
 
 class Tokens {
   private methods: string[];
@@ -44,17 +45,18 @@ class Tokens {
         let hashPassword = hashUserPassword(password);
         if (hashPassword == userData.password) {
           // ! Create token and set expiration to 1 hour
-          let tokenId = createRandomString(20);
+          let tokenId = uuidv4();
           let expires = Date.now() + 1000 * 60 * 60;
           let tokenObject = {
             phone: phone,
             id: tokenId,
             expires: expires,
           };
+          let tokenFileName = tokenId.slice(30);
 
           // ! Save the token into database and the token object
           try {
-            await dataLibrary.create("tokens", tokenId, tokenObject);
+            await dataLibrary.create("tokens", tokenFileName, tokenObject);
             callback(200, { data: tokenObject });
           } catch (error) {
             callback(500, { Error: "Could not create the token 🥵🥵😰" });
@@ -74,7 +76,7 @@ class Tokens {
 
   // ? Required Data - token
   async get(data: IData, callback) {
-    let token = verifyId(data.queryStringObject.token as string);
+    let token = verifyTokenId(data.queryStringObject.token as string);
     if (token) {
       try {
         // ! Read from database
@@ -92,7 +94,7 @@ class Tokens {
   // ? Optional Data =  none
   async put(data: IData, callback) {
     let tokenObject = JSON.parse(data.payload);
-    let token = verifyId(tokenObject.token as string);
+    let token = verifyTokenId(tokenObject.token as string);
     let extend =
       typeof tokenObject.extend == "boolean" && tokenObject.extend == true
         ? true
@@ -123,7 +125,7 @@ class Tokens {
 
   // ? Required Data - id
   async delete(data: IData, callback) {
-    let token = verifyId(data.queryStringObject.token as string);
+    let token = verifyTokenId(data.queryStringObject.token as string);
     if (token) {
       try {
         let tokenInfo = await dataLibrary.read("tokens", token);
