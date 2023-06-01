@@ -2,13 +2,15 @@ import { ParsedUrlQuery } from "node:querystring";
 import dataLibrary from "../lib/data";
 import { verifyToken } from "../utils/auth";
 import { hashUserPassword } from "../utils/hashPassword";
-import { validateCheckInput, validateUserInput} from "../utils/validateUserForm";
+import {
+  validateCheckInput,
+  validateUserInput,
+} from "../utils/validateUserForm";
 
 import { IData } from "../interfaces/data";
 import { ICheck } from "../interfaces/checkData";
 import config from ".././config.js";
-import { v4 as uuidv4 } from 'uuid';
-
+import { v4 as uuidv4 } from "uuid";
 
 class Checks {
   private methods: string[];
@@ -37,86 +39,94 @@ class Checks {
   // ? Required Data - protocol, url, method, successCode, timeoutSeconds
   async post(data: IData, callback) {
     let checkPayload = <ICheck>JSON.parse(data.payload);
-    
+
     if (validateCheckInput(checkPayload)) {
-      
-      let token = typeof (data.headers.token) == 'string' ? data.headers.token : false;
-    
-      if(token){
+      let token =
+        typeof data.headers.token == "string" ? data.headers.token : false;
+
+      if (token) {
         let fileName = token.slice(30);
         try {
           // ! Lookup the user by token
-         let tokenData = await dataLibrary.read('tokens', fileName);
-         let userPhone = tokenData.phone;
-         let userData = await dataLibrary.read('users', userPhone);
-          
-         // ! Extract checks from userData and check its size
-         let userChecks = userData.checks || [];
-         if(userChecks.length < config.maxChecks){
-          let checkId = uuidv4();
+          let tokenData = await dataLibrary.read("tokens", fileName);
+          let userPhone = tokenData.phone;
+          let userData = await dataLibrary.read("users", userPhone);
 
-        // ! Create the checkObject
-        let checkObject = {
-          'id': checkId,
-          'userPhone': userPhone,
-          'protocol':data.payload.protocol,
-          'url': data.payload.url,
-          'method': data.payload.method,
-          'successCode': data.payload.successCode,
-          'timeoutSeconds': data.payload.timeoutSeconds
+          // ! Extract checks from userData and check its size
+          let userChecks = userData.checks || [];
+          if (userChecks.length < config.maxChecks) {
+            let checkId = uuidv4();
+
+            // ! Create the checkObject
+            let checkObject = {
+              id: checkId,
+              userPhone: userPhone,
+              protocol: checkPayload.protocol,
+              url: checkPayload.url,
+              method: checkPayload.method,
+              successCode: checkPayload.successCode,
+              timeoutSeconds: checkPayload.timeoutSeconds,
+            };
+
+            let checkFileName = checkId.slice(30);
+
+            // ! Save the object in check table
+            await dataLibrary.create("checks", checkFileName, checkObject);
+            // ! add the check Id to the user table
+            userData.checks = userChecks;
+            userData.checks.push(checkId);
+
+            await dataLibrary.update("users", userPhone, userData);
+            callback(200, { check: checkObject });
+          } else {
+            callback(400, {
+              "Error ": "User has already maximum numbers of checks ",
+            });
+          }
+        } catch (error: any) {
+          // throw new Error(error);
+          console.log({ error });
+          callback(400, { "Error ": error.message });
         }
-
-        let checkFileName = checkId.slice(30);
-
-        // ! Save the object in check table
-        await dataLibrary.create('checks', checkFileName, checkObject);
-        // ! add the check Id to the user table
-        userData.checks = userChecks;
-        userData.checks.push(checkId);
-
-        await dataLibrary.update('users', userPhone, userData);
-        callback(200, { 'check': checkObject});
-         }else{
-          callback(400, { 'Error ': 'User has already maximum numbers of checks '})
-         }
-       } catch (error: any) {
-         // throw new Error(error);
-         console.log({ error });
-         callback(400, { "Error ": error.message });
-       }
-      }else{
-        callback(401, { 'Error ': "Invalid token"})
+      } else {
+        callback(401, { "Error ": "Invalid token" });
       }
-      
     } else {
       callback(400, { message: "'Missing required field' 🎃" });
     }
   }
 
-  // ? Required Data - phone
+  // ? Required Data - check id and token
   // ? Authorized only
   async get(data: IData, callback) {
-    let userPhone = data.queryStringObject.phone as string;
+    let checkId = data.queryStringObject.id as string;
     let token = data.headers.token;
-    // !Verify token is valid or not
-    let isAuthorized = await verifyToken(token, userPhone);
-
-    if (isAuthorized) {
-      try {
-        // ! Read from database
-        let data = await dataLibrary.read("users", userPhone);
-        delete data.password;
-        callback(200, { data: data });
-      } catch (error: any) {
-        
-        callback(404, { Error: "User not found" });
+    if (checkId) {
+      // !Verify token is valid or not
+      
+        try {
+          // ! Read from checkData using checkId
+          let checkFileName = checkId.slice(30);
+          let checkData = await dataLibrary.read("checks", checkFileName);
+          // ! Check token is valid as per phone number saved in checkData
+          let isAuthorized = await verifyToken(token, checkData.userPhone);
+          if(isAuthorized){
+            callback(200, { data: checkData });
+          }else{
+            callback(403)
+          }
+          
+        } catch (error: any) {
+          callback(404, { Error: error });
+        }
+      } 
+      else {
+        callback(401, {
+          message: "Missing Required fields or Invalid token 😝😝",
+        });
       }
-    } else {
-      callback(401, {
-        message: "Missing Required fields or Invalid token 😝😝",
-      });
     }
-  }
+  
 
   // ? Required Data = phone
   // ? Optional Data =  firstName, lastName, password ( at least one required)
@@ -153,12 +163,10 @@ class Checks {
             user = { ...user, password: hashUserPassword(newPassword) };
           }
 
-         
-            await dataLibrary.update("userss", userPhone, user);
-            callback(200, { message: "User updated successfully 🎃" });
-           
+          await dataLibrary.update("userss", userPhone, user);
+          callback(200, { message: "User updated successfully 🎃" });
         } catch (error: any) {
-            console.log("type of ",  error);
+          console.log("type of ", error);
           callback(400, { Error: error.message });
         }
       } else {
