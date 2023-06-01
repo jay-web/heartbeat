@@ -1,16 +1,17 @@
-import { ParsedUrlQuery } from "node:querystring";
+
 import dataLibrary from "../lib/data";
 import { verifyToken } from "../utils/auth";
-import { hashUserPassword } from "../utils/hashPassword";
+
 import {
   validateCheckInput,
-  validateUserInput,
+  validateCheckInputForUpdate
 } from "../utils/validateUserForm";
 
 import { IData } from "../interfaces/data";
 import { ICheck } from "../interfaces/checkData";
 import config from ".././config.js";
 import { v4 as uuidv4 } from "uuid";
+import { updateCheckData } from "../utils/helpers";
 
 class Checks {
   private methods: string[];
@@ -66,6 +67,7 @@ class Checks {
               method: checkPayload.method,
               successCode: checkPayload.successCode,
               timeoutSeconds: checkPayload.timeoutSeconds,
+              created_at: Date.now()
             };
 
             let checkFileName = checkId.slice(30);
@@ -128,54 +130,43 @@ class Checks {
     }
   
 
-  // ? Required Data = phone
-  // ? Optional Data =  firstName, lastName, password ( at least one required)
+  // ? Required Data = checkId
+  // ? Optional Data =  protocol, url, method, successCode, timeoutSeconds ( at least one required)
   // ? Should be authorized
   async put(data: IData, callback) {
-    let userPhone = data.queryStringObject.phone as string;
-    let isAuthorized = await verifyToken(data.headers.token, userPhone);
-    let user = JSON.parse(data.payload);
+    let checkId = data.queryStringObject.id as string;
+    let token = data.headers.token;
+    let checkDataPayload = JSON.parse(data.payload);
 
-    if (isAuthorized) {
-      let newFirstName =
-        typeof user.firstName == "string" && user.firstName.trim().length > 0
-          ? user.firstName.trim()
-          : false;
-      let newLastName =
-        typeof user.lastName == "string" && user.lastName.trim().length > 0
-          ? user.lastName.trim()
-          : false;
-      let newPassword =
-        typeof user.password == "string" && user.password.trim().length > 6
-          ? user.password.trim()
-          : false;
+    if (checkId) {
+      
 
-      if (newFirstName || newLastName || newPassword) {
+      if (validateCheckInputForUpdate(checkDataPayload)) {
         try {
-          let user = await dataLibrary.read("users", userPhone);
-          if (newFirstName) {
-            user = { ...user, firstName: newFirstName };
+          // ! Read from checkData using checkId
+          let checkFileName = checkId.slice(30);
+          let checkData = await dataLibrary.read("checks", checkFileName);
+          // ! Check token is valid as per phone number saved in checkData
+          let isAuthorized = await verifyToken(token, checkData.userPhone);
+          if(isAuthorized){
+            let updatedCheckData = updateCheckData(checkData, checkDataPayload);
+            updatedCheckData.updated_at = new Date(); 
+            await dataLibrary.update('checks', checkFileName, updatedCheckData);
+            callback(200, { data: updatedCheckData });
+          }else{
+            callback(403)
           }
-          if (newLastName) {
-            user = { ...user, lastName: newLastName };
-          }
-          if (newPassword) {
-            user = { ...user, password: hashUserPassword(newPassword) };
-          }
-
-          await dataLibrary.update("userss", userPhone, user);
-          callback(200, { message: "User updated successfully 🎃" });
+          
         } catch (error: any) {
-          console.log("type of ", error);
-          callback(400, { Error: error.message });
+          callback(404, { Error: error });
         }
       } else {
         callback(400, {
-          Error: "At least provide firstName, lastName or password to update",
+          Error: "At least provide one property of check Data to update",
         });
       }
     } else {
-      callback(401, { Error: "Not authorized" });
+      callback(400, { Error: "Check id is missing" });
     }
   }
 

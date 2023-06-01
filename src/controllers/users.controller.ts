@@ -1,4 +1,4 @@
-import { ParsedUrlQuery } from "node:querystring";
+
 import dataLibrary from "../lib/data";
 import { verifyToken } from "../utils/auth";
 import { hashUserPassword } from "../utils/hashPassword";

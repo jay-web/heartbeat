@@ -1,7 +1,7 @@
 import { IData } from "../interfaces/data";
 import dataLibrary from "../lib/data";
 import { verifyTokenId, verifyPhone } from "../utils/auth";
-import { createRandomString } from "../utils/createRandomString";
+
 import { hashUserPassword } from "../utils/hashPassword";
 import { v4 as uuidv4 } from 'uuid';
 
