@@ -140,7 +140,21 @@ class Users {
         let user = await dataLibrary.read("users", userPhone);
         if (user) {
           await dataLibrary.delete("users", userPhone);
-          callback(200, { message: "User deleted successfully 🎈😂" });
+          if(user.checks.length > 0){
+            let noOfDeletedCheck = 0;
+            user.checks.forEach(async (checkId) => {
+              let fileName = checkId.slice(30);
+              await dataLibrary.delete('checks', fileName);
+              noOfDeletedCheck++;
+            });
+            if(noOfDeletedCheck == user.checks.length){
+              callback(200, { message: "User deleted successfully 🎈😂" });
+            }else{
+              callback(500, { 'Error ': 'Internal server error while deleting checks of user'})
+            }
+          }
+          
+         
         }
       } catch (error) {
         callback(400, { Error: "Could not find the specified user" });

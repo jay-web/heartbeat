@@ -12,6 +12,7 @@ import { ICheck } from "../interfaces/checkData";
 import config from ".././config.js";
 import { v4 as uuidv4 } from "uuid";
 import { updateCheckData } from "../utils/helpers";
+import { IUser } from "../interfaces/user";
 
 class Checks {
   private methods: string[];
@@ -170,22 +171,42 @@ class Checks {
     }
   }
 
-  // ? Required Data - phone
+  // ? Required Data - checkId
   async delete(data: IData, callback) {
-    let userPhone = data.queryStringObject.phone as string;
-    let isAuthorized = await verifyToken(data.headers.token, userPhone);
-    if (isAuthorized) {
+    let checkId = data.queryStringObject.id as string;
+    let token = data.headers.token;
+    if (checkId) {
       try {
-        let user = await dataLibrary.read("users", userPhone);
-        if (user) {
-          await dataLibrary.delete("users", userPhone);
-          callback(200, { message: "User deleted successfully 🎈😂" });
+        // ! Read from checkData using checkId
+        let checkFileName = checkId.slice(30);
+        let checkData = await dataLibrary.read("checks", checkFileName);
+        // ! Check token is valid as per phone number saved in checkData
+        let isAuthorized = await verifyToken(token, checkData.userPhone);
+        if(isAuthorized){
+          // ! Step one - delete check from check table
+          await dataLibrary.delete('checks', checkFileName);
+
+          // ! Step two = delete check data from user table
+          let userInfo:IUser = await dataLibrary.read('users', checkData.userPhone);
+          if(userInfo.checks){
+            let indexOfCheck = userInfo.checks.indexOf(checkId);
+            if(indexOfCheck > -1){
+              userInfo.checks.splice(indexOfCheck, 1);
+            }
+            
+          }
+          // ! Save the updated user info into user table
+          await dataLibrary.update('users', userInfo.phone, userInfo);
+          callback(200, { message: 'check deleted successfully 😎' });
+        }else{
+          callback(403)
         }
-      } catch (error) {
-        callback(400, { Error: "Could not find the specified user" });
+        
+      } catch (error: any) {
+        callback(404, { Error: error });
       }
     } else {
-      callback(401, { Error: "Missing required field or not authorized" });
+      callback(400, { Error: "Missing required checkId" });
     }
   }
 }

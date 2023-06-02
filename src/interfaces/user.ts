@@ -3,5 +3,6 @@ export interface IUser {
     lastName: string,
     phone:string,
     password:string,
-    tosArgreement : boolean
+    tosArgreement : boolean,
+    checks?: string[]
 }
