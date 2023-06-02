@@ -2,6 +2,12 @@ import { IncomingMessage, ServerResponse } from "http";
 import url from "url";
 import { StringDecoder } from "string_decoder";
 import router from "../routers";
+import { sendTwilioSms } from "../utils/helpers";
+
+// ! To send the sms to use via TWILIO
+// sendTwilioSms('9958345009', 'Hey heartbeat', (err) => [
+//   console.log('Error from twilio ', err)
+// ])
 
 const unifiedServer = function (req: IncomingMessage, res: ServerResponse) {
   if (req.url) {
