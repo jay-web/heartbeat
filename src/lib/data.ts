@@ -1,5 +1,6 @@
 import * as fs from 'node:fs/promises';
 import path from 'path';
+import { AppError } from '../controllers/error.controller';
 
 class DataLibrary {
 
@@ -18,7 +19,7 @@ class DataLibrary {
            await fs.writeFile(fd, stringData);
     
         } catch (error) {
-            throw new Error(`${filename} in ${dir} is already exist`);            
+            throw new AppError(400, `${filename} in ${dir} is already exist`);            
         } finally {
             if(fd! !== undefined){
                 fd!.close()
@@ -32,11 +33,10 @@ class DataLibrary {
         let filePath = `${this.baseDir}${dir}/${filename}.json`;
         try {
             let data = await fs.readFile(filePath, 'utf-8');
-        
             return JSON.parse(data);
-        } catch (error:any) {
-            console.log("Error read ", error)
-            throw new Error(error);
+        } catch (error) {
+           
+            throw new AppError(404, `${filename} in ${dir} is not found`);  
         }
 
     }
@@ -51,8 +51,11 @@ class DataLibrary {
             let stringData = JSON.stringify(data);
             await fs.truncate(filePath);
             await fs.writeFile(fd, stringData);
-        } catch (error:any) {
-            throw new Error(error);
+        } catch (error) {
+            if(error instanceof Error){
+                throw new AppError(500, error.message);
+            }
+            
         } finally{
             if(fd! !== null){
                 fd!.close()
@@ -67,8 +70,10 @@ class DataLibrary {
 
         try {
             await fs.unlink(filePath);
-        } catch (error:any) {
-            throw new Error(error);
+        } catch (error) {
+            if(error instanceof Error){
+                throw new AppError(500, error.message);
+            }
         } 
     }
 }

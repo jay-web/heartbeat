@@ -1,3 +1,4 @@
+import { AppError } from "../controllers/error.controller";
 import { ICheck } from "../interfaces/checkData";
 import { IUser } from "../interfaces/user";
 
@@ -31,7 +32,7 @@ export const validateCheckInput = (data: ICheck) => {
     if(checkProtocol && checkUrl && checkMethod && checkSuccessCode && checkTimeoutSeconds ){
         return true;
     }else{
-        return false;
+        throw new AppError(400, "Missing required field")
     }
 }
 
@@ -48,7 +49,7 @@ export const validateCheckInputForUpdate = (data: ICheck) => {
     if(checkProtocol || checkUrl || checkMethod || checkSuccessCode || checkTimeoutSeconds ){
         return true;
     }else{
-        return false;
+        throw new AppError(400, "Missing required field")
     }
 }
 

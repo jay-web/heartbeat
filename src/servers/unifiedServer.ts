@@ -3,6 +3,7 @@ import url from "url";
 import { StringDecoder } from "string_decoder";
 import router from "../routers";
 import { sendTwilioSms } from "../utils/helpers";
+import { AppError, HttpStatusCode } from "../controllers/error.controller";
 
 // ! To send the sms to use via TWILIO
 // sendTwilioSms('9958345009', 'Hey heartbeat', (err) => [
@@ -64,22 +65,31 @@ const unifiedServer = function (req: IncomingMessage, res: ServerResponse) {
         // console.log("Data from unifiedServer ", data)
         // ? finally call the handler
         try {
-          selectedHandler(data, function (statusCode, payload) {
-            // ! Set Default status code and payload if not provided to 200
-            statusCode = typeof statusCode == "number" ? statusCode : 200;
-            payload = typeof payload == "object" ? payload : {};
+          await selectedHandler(
+            data,
+            function (statusCode: HttpStatusCode, payload) {
+              // ! Set Default status code and payload if not provided to 200
+              statusCode = typeof statusCode == "number" ? statusCode : 200;
+              payload = typeof payload == "object" ? payload : {};
 
-            // ! Convert the payload into JSON
-            // ! (Note : this is payload which is respond by the server to user)
-            let payloadString = JSON.stringify(payload);
-            
-            res.writeHead(statusCode);
-            res.end(payloadString);
-            console.log(`Request ends successfully `, payloadString, data)
-          });
-        } catch (error:any) {
-          
-            throw new Error(error.message)
+              // ! Convert the payload into JSON
+              // ! (Note : this is payload which is respond by the server to user)
+              let payloadString = JSON.stringify(payload);
+
+              res.writeHead(statusCode);
+              res.end(payloadString);
+              console.log(`Request ends successfully `, payloadString, data);
+            }
+          );
+        } catch (error) {
+          console.log(`Landed here ${error}`);
+          if (error instanceof AppError) {
+            console.error(error);
+            res.statusCode = error.statusCode || 500;
+            res.end(error.message || "Internal Server Error");
+          } else {
+            res.end();
+          }
         }
       }
     });

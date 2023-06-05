@@ -1,3 +1,4 @@
+import { HTTP401Error } from "../controllers/error.controller";
 import dataLibrary from "../lib/data";
 
 type input = string | string[] | undefined;
@@ -25,6 +26,7 @@ export const verifyToken = async (id:input, phone:input) => {
         return true;
        }
     }else{
-        return false;
+        // return false;
+        throw new HTTP401Error();
     }
 }

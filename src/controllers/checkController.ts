@@ -13,6 +13,7 @@ import config from ".././config.js";
 import { v4 as uuidv4 } from "uuid";
 import { updateCheckData } from "../utils/helpers";
 import { IUser } from "../interfaces/user";
+import { AppError } from "./error.controller";
 
 class Checks {
   private methods: string[];
@@ -42,13 +43,13 @@ class Checks {
   async post(data: IData, callback) {
     let checkPayload = <ICheck>JSON.parse(data.payload);
 
-    if (validateCheckInput(checkPayload)) {
-      let token =
-        typeof data.headers.token == "string" ? data.headers.token : false;
+    try {
+      await validateCheckInput(checkPayload);
+      let token = typeof data.headers.token == "string" ? data.headers.token : false;
 
       if (token) {
         let fileName = token.slice(30);
-        try {
+       
           // ! Lookup the user by token
           let tokenData = await dataLibrary.read("tokens", fileName);
           let userPhone = tokenData.phone;
@@ -86,17 +87,22 @@ class Checks {
               "Error ": "User has already maximum numbers of checks ",
             });
           }
-        } catch (error: any) {
-          // throw new Error(error);
-          console.log({ error });
-          callback(400, { "Error ": error.message });
-        }
+        
       } else {
         callback(401, { "Error ": "Invalid token" });
       }
-    } else {
-      callback(400, { message: "'Missing required field' 🎃" });
+      
+    } catch (error) {
+      if (error instanceof AppError) {
+        callback(error.statusCode, { error: error.message });
+      }
     }
+
+
+      
+
+     
+    
   }
 
   // ? Required Data - check id and token
@@ -104,28 +110,26 @@ class Checks {
   async get(data: IData, callback) {
     let checkId = data.queryStringObject.id as string;
     let token = data.headers.token;
-    if (checkId) {
+    if (checkId && token) {
       // !Verify token is valid or not
       
         try {
           // ! Read from checkData using checkId
           let checkFileName = checkId.slice(30);
           let checkData = await dataLibrary.read("checks", checkFileName);
-          // ! Check token is valid as per phone number saved in checkData
-          let isAuthorized = await verifyToken(token, checkData.userPhone);
-          if(isAuthorized){
-            callback(200, { data: checkData });
-          }else{
-            callback(403)
-          }
+          // ! Check token is valid as per phone number saved in checkData (means data is belong to user)
+          await verifyToken(token, checkData.userPhone);
+          callback(200, { data: checkData });
           
         } catch (error: any) {
-          callback(404, { Error: error });
+          if (error instanceof AppError) {
+            callback(error.statusCode, { error: error.message });
+          }
         }
       } 
       else {
         callback(401, {
-          message: "Missing Required fields or Invalid token 😝😝",
+          message: "Missing Required fields or missing token 😝😝",
         });
       }
     }
@@ -139,35 +143,29 @@ class Checks {
     let token = data.headers.token;
     let checkDataPayload = JSON.parse(data.payload);
 
-    if (checkId) {
+    if (checkId && token) {
+
+      try {
+        await validateCheckInputForUpdate(checkDataPayload);
+        // ! Read from checkData using checkId
+        let checkFileName = checkId.slice(30);
+        let checkData = await dataLibrary.read("checks", checkFileName);
+        // ! Check token is valid as per phone number saved in checkData
+        await verifyToken(token, checkData.userPhone);
+          let updatedCheckData = updateCheckData(checkData, checkDataPayload);
+          updatedCheckData.updated_at = new Date(); 
+          await dataLibrary.update('checks', checkFileName, updatedCheckData);
+          callback(200, { data: updatedCheckData });
+        
+      } catch (error) {
+        if (error instanceof AppError) {
+          callback(error.statusCode, { error: error.message });
+        }
+      }
       
 
-      if (validateCheckInputForUpdate(checkDataPayload)) {
-        try {
-          // ! Read from checkData using checkId
-          let checkFileName = checkId.slice(30);
-          let checkData = await dataLibrary.read("checks", checkFileName);
-          // ! Check token is valid as per phone number saved in checkData
-          let isAuthorized = await verifyToken(token, checkData.userPhone);
-          if(isAuthorized){
-            let updatedCheckData = updateCheckData(checkData, checkDataPayload);
-            updatedCheckData.updated_at = new Date(); 
-            await dataLibrary.update('checks', checkFileName, updatedCheckData);
-            callback(200, { data: updatedCheckData });
-          }else{
-            callback(403)
-          }
-          
-        } catch (error: any) {
-          callback(404, { Error: error });
-        }
-      } else {
-        callback(400, {
-          Error: "At least provide one property of check Data to update",
-        });
-      }
     } else {
-      callback(400, { Error: "Check id is missing" });
+      callback(400, { Error: "Check id or token is missing" });
     }
   }
 
@@ -175,14 +173,14 @@ class Checks {
   async delete(data: IData, callback) {
     let checkId = data.queryStringObject.id as string;
     let token = data.headers.token;
-    if (checkId) {
+    if (checkId && token) {
       try {
         // ! Read from checkData using checkId
         let checkFileName = checkId.slice(30);
         let checkData = await dataLibrary.read("checks", checkFileName);
         // ! Check token is valid as per phone number saved in checkData
-        let isAuthorized = await verifyToken(token, checkData.userPhone);
-        if(isAuthorized){
+        await verifyToken(token, checkData.userPhone);
+        
           // ! Step one - delete check from check table
           await dataLibrary.delete('checks', checkFileName);
 
@@ -198,15 +196,15 @@ class Checks {
           // ! Save the updated user info into user table
           await dataLibrary.update('users', userInfo.phone, userInfo);
           callback(200, { message: 'check deleted successfully 😎' });
-        }else{
-          callback(403)
-        }
+       
         
-      } catch (error: any) {
-        callback(404, { Error: error });
+      } catch (error) {
+        if (error instanceof AppError) {
+          callback(error.statusCode, { error: error.message });
+        }
       }
     } else {
-      callback(400, { Error: "Missing required checkId" });
+      callback(400, { Error: "Missing required checkId or token" });
     }
   }
 }
