@@ -3,6 +3,7 @@ import config from "./config";
 import httpsServer from "./servers/httpsServer";
 import httpServer from "./servers/httpServer";
 import dataLibrary from "./lib/data";
+import workers from "./workers";
 
 const httpPort = config.httpPort;
 const httpsPort = config.httpsPort;
@@ -52,6 +53,8 @@ httpsServer.listen(httpsPort, () => {
 httpServer.listen(httpPort, () => {
   console.log(`Hey HTTP server listening at ${httpPort}`);
 });
+
+workers.init();
 
 
 process.on('uncaughtException', (err) => {

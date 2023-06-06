@@ -6,5 +6,7 @@ export interface ICheck {
     successCode?: string[],
     timeoutSeconds?: string,
     created_at?:Date,
-    updated_at?:Date
+    updated_at?:Date,
+    lastChecked?:Date | boolean,
+    state?:string
 }
