@@ -54,7 +54,7 @@ httpServer.listen(httpPort, () => {
   console.log(`Hey HTTP server listening at ${httpPort}`);
 });
 
-workers.init();
+// workers.init();
 
 
 process.on('uncaughtException', (err) => {

@@ -62,7 +62,7 @@ class Users {
     let token = data.headers.token;
     try {
       // !Verify token is valid or not
-      let isAuthorized = await verifyToken(token, userPhone);
+      await verifyToken(token, userPhone);
       // ! Read from database
       let data = await dataLibrary.read("users", userPhone);
       delete data.password;

@@ -6,6 +6,11 @@ import http from "node:http";
 import url from "url";
 import { sendTwilioSms } from "../utils/helpers";
 
+enum CHECK_STATE {
+    UP = 'up',
+    DOWN = 'down'
+}
+
 class Workers {
 
     private baseDir = path.join(__dirname, '/../database/');
@@ -25,10 +30,11 @@ class Workers {
             let checks = await fs.readdir(this.baseDir+'checks/');
             if(checks && checks.length > 0){
                   // ! Loop into checks array and gather all check data
-                  for(let check in checks){
-                    let data = await fs.readFile(check, 'utf-8');
+                  for(let check of checks){
+                    let file = `${this.baseDir}/checks/${check}`
+                    let data = await fs.readFile(file, 'utf-8');
                     let checkData = JSON.parse(data);
-                    checkData.state = ['up', 'down'].indexOf(checkData.state) > -1 ? checkData.state : 'down';
+                    checkData.state = [CHECK_STATE.UP, CHECK_STATE.DOWN].indexOf(checkData.state) > -1 ? checkData.state : CHECK_STATE.DOWN;
                     checkData.lastChecked = checkData.lastChecked || false
                    
                     this.performCheck(checkData);
@@ -46,7 +52,7 @@ class Workers {
     loop = () => {
         setInterval(() => {
             this.gatherAllChecks();
-        }, 1000 * 5)
+        }, 1000 * 60)
     }
 
     //! Make request on checks and pass the data or error to performCheckoutcome function
@@ -127,7 +133,7 @@ class Workers {
         let state = !checkOutcomeData.error && 
                         checkOutcomeData.responseCode && 
                         checkData.successCode.indexOf(checkOutcomeData.responseCode) > - 1
-                        ? 'UP' : 'DOWN';
+                        ? CHECK_STATE.UP : CHECK_STATE.DOWN;
 
         // ! Decide alert need to be alarm or not
         let alertWarranted = checkData.lastChecked && checkData.state !== state ? true : false;
@@ -144,6 +150,8 @@ class Workers {
             await dataLibrary.update('checks', checkFileName, newCheckData);
             if(alertWarranted){
                 this.triggerAlarm(newCheckData)
+            }else{
+                console.log('No alert required - No change in status', 'coming status is ',  checkOutcomeData.responseCode)
             }
         } catch (error) {
             console.error('Error while updating error on check')

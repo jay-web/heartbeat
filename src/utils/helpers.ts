@@ -70,7 +70,7 @@ export const sendTwilioSms = async (phone:string , msg:string, callback) => {
 
         // ! Instantiate the HTTP request
        let req =  https.request(requestDetails, (res) => {
-        console.log('res from twilio ', res)
+        // console.log('res from twilio ', res)
             if(res.statusCode == 200 || res.statusCode == 201){
                 callback(false)
             }else{

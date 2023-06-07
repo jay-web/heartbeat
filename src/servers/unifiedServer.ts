@@ -71,12 +71,14 @@ const unifiedServer = function (req: IncomingMessage, res: ServerResponse) {
               // ! Set Default status code and payload if not provided to 200
               statusCode = typeof statusCode == "number" ? statusCode : 200;
               payload = typeof payload == "object" ? payload : {};
+              res.setHeader('Content-Type','application/json');
+              res.writeHead(statusCode);
 
+              
               // ! Convert the payload into JSON
               // ! (Note : this is payload which is respond by the server to user)
               let payloadString = JSON.stringify(payload);
 
-              res.writeHead(statusCode);
               res.end(payloadString);
               console.log(`Request ends successfully `, payloadString, data);
             }
@@ -84,8 +86,8 @@ const unifiedServer = function (req: IncomingMessage, res: ServerResponse) {
         } catch (error) {
           console.log(`Landed here ${error}`);
           if (error instanceof AppError) {
-            console.error(error);
-            res.statusCode = error.statusCode || 500;
+            res.setHeader('Content-Type','application/json');
+            res.writeHead(error.statusCode || 500);
             res.end(error.message || "Internal Server Error");
           } else {
             res.end();
