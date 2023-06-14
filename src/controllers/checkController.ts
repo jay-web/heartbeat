@@ -14,7 +14,10 @@ import { v4 as uuidv4 } from "uuid";
 import { updateCheckData } from "../utils/helpers";
 import { IUser } from "../interfaces/user";
 import { AppError } from "./error.controller";
+import { callbackType } from "../types/callback";
 
+
+   
 class Checks {
   private methods: string[];
 
@@ -29,18 +32,18 @@ class Checks {
     delete: this.delete,
   };
 
-  assignHandler = (data: IData, callback) => {
-    // console.log(`methods `, this.methods)
+  assignHandler = (data: IData, callback:callbackType) => {
+   
     if (this.methods.indexOf(data.method) > -1) {
       this.handlers[data.method](data, callback);
     } else {
-      callback(405, "Invalid HTTP Method");
+      callback(405, { "Error": "Invalid HTTP Method" });
     }
   };
 
   // ! Create new check
   // ? Required Data - protocol, url, method, successCode, timeoutSeconds
-  async post(data: IData, callback) {
+  async post(data: IData, callback:callbackType) {
     let checkPayload = <ICheck>JSON.parse(data.payload);
 
     try {
@@ -96,18 +99,12 @@ class Checks {
       if (error instanceof AppError) {
         callback(error.statusCode, { error: error.message });
       }
-    }
-
-
-      
-
-     
-    
+    } 
   }
 
   // ? Required Data - check id and token
   // ? Authorized only
-  async get(data: IData, callback) {
+  async get(data: IData, callback:callbackType) {
     let checkId = data.queryStringObject.id as string;
     let token = data.headers.token;
     if (checkId && token) {
@@ -138,7 +135,7 @@ class Checks {
   // ? Required Data = checkId
   // ? Optional Data =  protocol, url, method, successCode, timeoutSeconds ( at least one required)
   // ? Should be authorized
-  async put(data: IData, callback) {
+  async put(data: IData, callback:callbackType) {
     let checkId = data.queryStringObject.id as string;
     let token = data.headers.token;
     let checkDataPayload = JSON.parse(data.payload);
@@ -170,7 +167,7 @@ class Checks {
   }
 
   // ? Required Data - checkId
-  async delete(data: IData, callback) {
+  async delete(data: IData, callback:callbackType) {
     let checkId = data.queryStringObject.id as string;
     let token = data.headers.token;
     if (checkId && token) {

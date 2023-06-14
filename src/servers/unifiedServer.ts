@@ -2,13 +2,10 @@ import { IncomingMessage, ServerResponse } from "http";
 import url from "url";
 import { StringDecoder } from "string_decoder";
 import router from "../routers";
-import { sendTwilioSms } from "../utils/helpers";
+
 import { AppError, HttpStatusCode } from "../controllers/error.controller";
 
-// ! To send the sms to use via TWILIO
-// sendTwilioSms('9958345009', 'Hey heartbeat', (err) => [
-//   console.log('Error from twilio ', err)
-// ])
+
 
 const unifiedServer = function (req: IncomingMessage, res: ServerResponse) {
   if (req.url) {
@@ -42,8 +39,7 @@ const unifiedServer = function (req: IncomingMessage, res: ServerResponse) {
     req.on("end", async function () {
       buffer += decorder.end();
 
-      console.log("tm ", typeof trimmedPath, trimmedPath);
-
+  
       // ? Choose the handler as per the path on which request need to send to handle
       if (trimmedPath) {
         let selectedHandler =
@@ -62,7 +58,7 @@ const unifiedServer = function (req: IncomingMessage, res: ServerResponse) {
           payload: buffer,
         };
 
-        // console.log("Data from unifiedServer ", data)
+        
         // ? finally call the handler
         try {
           await selectedHandler(
@@ -84,7 +80,7 @@ const unifiedServer = function (req: IncomingMessage, res: ServerResponse) {
             }
           );
         } catch (error) {
-          console.log(`Landed here ${error}`);
+          
           if (error instanceof AppError) {
             res.setHeader('Content-Type','application/json');
             res.writeHead(error.statusCode || 500);

@@ -1,5 +1,5 @@
 {
-  "name": "monitor",
+  "name": "heartbeat",
   "version": "1.0.0",
   "description": "upvote monitoring application",
   "main": "index.js",

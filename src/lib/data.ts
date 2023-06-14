@@ -12,7 +12,7 @@ class DataLibrary {
         let filePath = `${this.baseDir}${dir}/${filename}.json`;
         let fd: fs.FileHandle | null;
 
-        // ! Open the file for writing and write the data
+        // ! Create the file for writing and write the data
         try {
             fd = await fs.open(filePath, 'wx');
             let stringData = JSON.stringify(data);
@@ -49,7 +49,7 @@ class DataLibrary {
         try {
             fd = await fs.open(filePath, 'r+');
             let stringData = JSON.stringify(data);
-            await fs.truncate(filePath);
+            await fs.truncate(filePath);            // ! Remove the previous content
             await fs.writeFile(fd, stringData);
         } catch (error) {
             if(error instanceof Error){

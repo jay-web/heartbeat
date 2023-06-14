@@ -26,7 +26,7 @@ export const verifyToken = async (id:input, phone:input) => {
         return true;
        }
     }else{
-        // return false;
+       
         throw new HTTP401Error();
     }
 }

@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "node:fs/promises";
 import dataLibrary from "../lib/data";
+import logLibrary from "../lib/log";
 import https from "node:https";
 import http from "node:http";
 import url from "url";
@@ -23,9 +24,9 @@ class Workers {
         this.loop();
     }
 
-    gatherAllChecks = async () => {
+    private gatherAllChecks = async () => {
       
-        // let checksNames: string[] = [];
+       
         try {
             let checks = await fs.readdir(this.baseDir+'checks/');
             if(checks && checks.length > 0){
@@ -49,14 +50,16 @@ class Workers {
     }
 
     // ! Timer to execute the process once per minute
-    loop = () => {
+    private loop = () => {
         setInterval(() => {
             this.gatherAllChecks();
         }, 1000 * 60)
     }
 
+    
+
     //! Make request on checks and pass the data or error to performCheckoutcome function
-    performCheck = (checkData) => {
+    private performCheck = (checkData) => {
         // ! Prepare the initial check outcome
         let checkOutcome: {'error': boolean | {}, 'responseCode': boolean | number} = {
             'error': false,
@@ -128,7 +131,8 @@ class Workers {
     // ! Update the checkData
     // ! Trigger alarm on status change to DOWN
 
-    processCheckOutcome = async (checkData, checkOutcomeData) => {
+    private processCheckOutcome = async (checkData, checkOutcomeData) => {
+        let timeOfCheck = Date.now();
         // ! Find the check status i.e 'UP' or 'DOWN;
         let state = !checkOutcomeData.error && 
                         checkOutcomeData.responseCode && 
@@ -146,6 +150,8 @@ class Workers {
         // ! Save the updated data into database
         let checkFileName = newCheckData.id.slice(30);
 
+        this.log(checkData, checkOutcomeData, state, alertWarranted, timeOfCheck)
+
         try {
             await dataLibrary.update('checks', checkFileName, newCheckData);
             if(alertWarranted){
@@ -158,7 +164,7 @@ class Workers {
         }
     }
 
-    triggerAlarm = async (newCheckData) => {
+    private triggerAlarm = async (newCheckData) => {
         let message = `Alert : your check for 
                         ${newCheckData.method.toUpperCase()} for the 
                         ${newCheckData.protocol}://
@@ -174,6 +180,26 @@ class Workers {
             }
         })
                         
+    }
+
+    private log = async (originalCheckData, checkOutCome, state, alertWarranted, timeOfCheck) => {
+        // ! Create log object
+        let logData = {
+            'check': originalCheckData,
+            'outcome': checkOutCome,
+            'state': state,
+            'alert': alertWarranted,
+            'timeOfCheck': timeOfCheck
+        }
+
+        // ! Log the data
+        let fileName = originalCheckData.id.slice(30);
+        try {
+            await logLibrary.log(fileName, logData);
+        } catch (error) {
+            console.log('Error while logging the check in logs')
+        }
+        
     }
 
 }

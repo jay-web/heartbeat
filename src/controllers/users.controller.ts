@@ -3,7 +3,8 @@ import { verifyToken } from "../utils/auth";
 import { hashUserPassword } from "../utils/hashPassword";
 import { validateUserInput } from "../utils/validateUserForm";
 import { IData } from "../interfaces/data";
-import { AppError, HTTP401Error } from "./error.controller";
+import { AppError } from "./error.controller";
+import { callbackType } from "../types/callback";
 
 class Users {
   private methods: string[];
@@ -19,7 +20,7 @@ class Users {
     delete: this.delete,
   };
 
-  assignHandler = (data: IData, callback) => {
+  assignHandler = (data: IData, callback:callbackType) => {
     // console.log(`methods `, this.methods)
     if (this.methods.indexOf(data.method) > -1) {
       this.handlers[data.method](data, callback);
@@ -30,7 +31,7 @@ class Users {
 
   // ! Create new user
   // ? Required Data - firstname, lastname, phone toaAgreement
-  async post(data: IData, callback) {
+  async post(data: IData, callback:callbackType) {
     let userInfo = JSON.parse(data.payload);
     if (validateUserInput(userInfo)) {
       let { firstName, lastName, phone, tosArgreement } = userInfo;
@@ -57,7 +58,7 @@ class Users {
 
   // ? Required Data - phone
   // ? Authorized only
-  async get(data: IData, callback) {
+  async get(data: IData, callback:callbackType) {
     let userPhone = data.queryStringObject.phone as string;
     let token = data.headers.token;
     try {
@@ -77,7 +78,7 @@ class Users {
   // ? Required Data = phone
   // ? Optional Data =  firstName, lastName, password ( at least one required)
   // ? Should be authorized
-  async put(data: IData, callback) {
+  async put(data: IData, callback:callbackType) {
     let userPhone = data.queryStringObject.phone as string;
     try {
       let isAuthorized = await verifyToken(data.headers.token, userPhone);
@@ -124,7 +125,7 @@ class Users {
   }
 
   // ? Required Data - phone
-  async delete(data: IData, callback) {
+  async delete(data: IData, callback:callbackType) {
     let userPhone = data.queryStringObject.phone as string;
     try {
       await verifyToken(data.headers.token, userPhone);

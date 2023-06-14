@@ -27,12 +27,13 @@ export class AppError extends Error {
 
 }
 
-// class HTTP400Error extends AppError {
-//     constructor(description = 'bad request') {
-//       super('NOT FOUND', HttpStatusCode.BAD_REQUEST,  description, true);
-//     }
-//    }
 
+
+export class HTTP400Error extends AppError {
+  constructor(message = 'Bad Request') {
+  super(HttpStatusCode.BAD_REQUEST,  message);
+}
+}
 
 export function instanceOfNodeError<T extends new (...args: any) => Error>(
   value: Error,

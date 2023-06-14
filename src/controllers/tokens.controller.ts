@@ -2,9 +2,10 @@ import { IData } from "../interfaces/data";
 import dataLibrary from "../lib/data";
 import { verifyTokenId, verifyPhone } from "../utils/auth";
 
-import { hashUserPassword, verifyPassword } from "../utils/hashPassword";
+import {verifyPassword } from "../utils/hashPassword";
 import { v4 as uuidv4 } from 'uuid';
 import { AppError } from "./error.controller";
+import { callbackType } from "../types/callback";
 
 class Tokens {
   private methods: string[];
@@ -20,7 +21,7 @@ class Tokens {
     delete: this.delete,
   };
 
-  assignHandler = (data: IData, callback) => {
+  assignHandler = (data: IData, callback:callbackType) => {
     // console.log(`methods `, this.methods)
     if (this.methods.indexOf(data.method) > -1) {
       this.handlers[data.method](data, callback);
@@ -31,7 +32,7 @@ class Tokens {
 
   // ! Create new token
   // ? Required Data - phone, password
-  async post(data: IData, callback) {
+  async post(data: IData, callback:callbackType) {
     let userInfo = JSON.parse(data.payload);
     let phone = verifyPhone(userInfo.phone);
     let password =
@@ -71,7 +72,7 @@ class Tokens {
   }
 
   // ? Required Data - token
-  async get(data: IData, callback) {
+  async get(data: IData, callback:callbackType) {
     let token = verifyTokenId(data.queryStringObject.token as string);
     if (token) {
       try {
@@ -91,7 +92,7 @@ class Tokens {
 
   // ? Required Data = token, extends
   // ? Optional Data =  none
-  async put(data: IData, callback) {
+  async put(data: IData, callback:callbackType) {
     let tokenObject = JSON.parse(data.payload);
     let token = verifyTokenId(tokenObject.token as string);
     let extend =
@@ -126,7 +127,7 @@ class Tokens {
   }
 
   // ? Required Data - id
-  async delete(data: IData, callback) {
+  async delete(data: IData, callback:callbackType) {
     let token = verifyTokenId(data.queryStringObject.id as string);
     if (token) {
       try {

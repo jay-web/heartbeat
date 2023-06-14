@@ -9,7 +9,6 @@ const router = {
     'notfound': controllers.notFound
 }
 
-let ab = 'sample';
-console.log(router[ab])
+
 
 export default router;
